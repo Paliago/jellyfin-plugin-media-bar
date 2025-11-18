@@ -12,7 +12,7 @@ namespace Jellyfin.Plugin.MediaBar.Configuration
     {
         public MediaBarState Enabled { get; set; } = MediaBarState.Enabled;
 
-        public string VersionString { get; set; } = "v2.5.0";
+        public string VersionString { get; set; } = "v2.5.2";
         
         public bool UseAvatarsFile { get; set; } = true;
 
