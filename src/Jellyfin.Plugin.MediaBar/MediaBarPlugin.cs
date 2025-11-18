@@ -1,4 +1,4 @@
-﻿using Jellyfin.Plugin.MediaBar.Configuration;
+using Jellyfin.Plugin.MediaBar.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
@@ -8,9 +8,10 @@ namespace Jellyfin.Plugin.MediaBar
 {
     public class MediaBarPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfiguration, IHasWebPages
     {
-        public override Guid Id => Guid.Parse("08f615ea-2107-4f04-89cc-091035f54448");
+        // Changed GUID to avoid conflict with original plugin
+        public override Guid Id => Guid.Parse("a8b4c5d6-3210-4f04-89cc-fe9876543210");
 
-        public override string Name => "Media Bar";
+        public override string Name => "Media Bar (Performance)";
 
         public static MediaBarPlugin Instance { get; private set; } = null!;
         

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Plugins;
 
 namespace Jellyfin.Plugin.MediaBar.Configuration
 {
@@ -12,7 +12,7 @@ namespace Jellyfin.Plugin.MediaBar.Configuration
     {
         public MediaBarState Enabled { get; set; } = MediaBarState.Enabled;
 
-        public string VersionString { get; set; } = "main";
+        public string VersionString { get; set; } = "v2.5.0";
         
         public bool UseAvatarsFile { get; set; } = true;
 
