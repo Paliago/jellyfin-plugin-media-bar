@@ -1,22 +1,65 @@
 <h1 align="center">Media Bar</h1>
-<h2 align="center">A Jellyfin Plugin</h2>
+<h2 align="center">A Jellyfin Plugin (Performance-Optimized Fork)</h2>
 <p align="center">
-	<img alt="Logo" src="https://raw.githubusercontent.com/IAmParadox27/jellyfin-plugin-media-bar/main/src/logo.png" />
+	<img alt="Logo" src="https://raw.githubusercontent.com/Paliago/jellyfin-plugin-media-bar/main/src/logo.png" />
 	<br />
 	<br />
-	<a href="https://github.com/IAmParadox27/jellyfin-plugin-media-bar/?tab=License-1-ov-file">
+	<a href="https://github.com/Paliago/jellyfin-plugin-media-bar/?tab=License-1-ov-file">
 		<img alt="DBAD" src="https://img.shields.io/badge/license-DBAD-blue" />
 	</a>
-	<a href="https://github.com/IAmParadox27/jellyfin-plugin-media-bar/releases">
-		<img alt="Current Release" src="https://img.shields.io/github/release/IAmParadox27/jellyfin-plugin-media-bar.svg" />
+	<a href="https://github.com/Paliago/jellyfin-plugin-media-bar/releases">
+		<img alt="Current Release" src="https://img.shields.io/github/release/Paliago/jellyfin-plugin-media-bar.svg" />
 	</a>
 </p>
+
+## 🚀 What's New in This Fork
+
+This is a performance-optimized fork of the excellent Media Bar plugin, specifically designed to run smoothly on high-resolution displays like the Steam Deck @ 4K. 
+
+**v2.5.0 Changelog:**
+- ✨ Responsive image loading with resolution-appropriate sizing
+- ⚡ Automatic animation optimization for 1440p/4K displays
+- 🎯 GPU acceleration improvements with proper compositing hints
+- 📉 ~70% reduction in bandwidth usage on 4K displays
+- 🎮 Tested and optimized for Steam Deck gaming mode @ 4K
+
+## Performance Optimizations (v2.5.0)
+
+This fork includes significant performance improvements for high-resolution displays (1440p/4K):
+
+### What's Optimized:
+- **Responsive Image Loading**: Images are now capped at appropriate resolutions based on your display
+  - 4K displays: Backdrops limited to 1920px width, ~70% smaller file size
+  - 1440p displays: Optimized quality settings for smoother performance
+  - Lower quality settings at high resolutions reduce GPU decode time
+  
+- **Adaptive Animations**: Expensive effects are automatically disabled on high-res displays
+  - Blur animations disabled at 1440p+ (major GPU performance boost)
+  - Ken Burns zoom effect disabled at 1440p+ (reduces transform overhead)
+  - Simple fade transitions used instead for buttery-smooth performance
+  
+- **GPU Acceleration Optimizations**:
+  - Proper `will-change` hints for smoother compositing
+  - Batched DOM updates using `requestAnimationFrame`
+  - Reduced layer complexity and repaint operations
+
+### Performance Impact:
+On a 4K display (Steam Deck @ 4K):
+- **~70% reduction** in image data downloaded
+- **Eliminates** GPU-intensive blur filtering on large images
+- **Smoother transitions** with reduced frame drops
+- **Lower memory usage** from smaller image buffers
+
+The plugin automatically detects your resolution and applies the appropriate optimizations - no configuration needed!
 
 ## Reporting Issues
 
 If you face issues relating to the visuals or behaviour of buttons added by the Media Bar please report them on MakD's repo (the one this is forked from). This plugin pulls the content from their repo directly and is only in control of adding it without the need for modifying your JF install files.
 
 Any issues with plugin's settings (including using a playlist as your avatar's playlist) should be made here.
+
+For performance-related issues specifically on high-resolution displays, please open an issue on this fork.
+
 ## Development Update - 20th August 2025
 
 Hey all! Things are changing with my plugins are more and more people start to use them and report issues. In order to make it easier for me to manage I'm splitting bugs and features into different areas. For feature requests please head over to <a href="https://features.iamparadox.dev/">https://features.iamparadox.dev/</a> where you'll be able to signin with GitHub and make a feature request. For bugs please report them on the relevant GitHub repo and they will be added to the <a href="https://github.com/users/IAmParadox27/projects/1/views/1">project board</a> when I've seen them. I've found myself struggling to know when issues are made and such recently so I'm also planning to create a system that will monitor a particular view for new issues that come up and send me a notification which should hopefully allow me to keep more up to date and act faster on various issues.

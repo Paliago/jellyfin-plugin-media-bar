@@ -1,17 +1,35 @@
 /*
- * Jellyfin Slideshow by M0RPH3US v3.0.4
+ * Jellyfin Slideshow by M0RPH3US v3.0.5-performance
+ * Performance optimizations for high-resolution displays (1440p/4K)
  */
 
 @import url(https://fonts.googleapis.com/css2?family=Archivo+Narrow:ital,wght@0,400..700;1,400..700&display=swap);
 
-.backdrop.animate {
-  animation:
-    frostedGlass 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-    kenBurnsZoomIn 10s ease-out forwards;
+/* Disable expensive blur and zoom animations on high-resolution displays */
+/* Standard resolution: full animations */
+@media (max-width: 2559px) and (max-height: 1439px) {
+  .backdrop.animate {
+    animation:
+      frostedGlass 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+      kenBurnsZoomIn 10s ease-out forwards;
+  }
+
+  .logo.animate {
+    animation: frostedGlass 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
-.logo.animate {
-  animation: frostedGlass 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* High resolution (1440p-4K): only fade, no blur or zoom */
+@media (min-width: 2560px), (min-height: 1440px) {
+  .backdrop.animate {
+    animation: simpleFade 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity;
+  }
+
+  .logo.animate {
+    animation: simpleFade 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity;
+  }
 }
 
 @keyframes frostedGlass {
@@ -33,6 +51,16 @@
 
   to {
     transform: scale(1.1);
+  }
+}
+
+@keyframes simpleFade {
+  from {
+    opacity: 0.7;
+  }
+
+  to {
+    opacity: 1;
   }
 }
 
@@ -255,6 +283,10 @@
   height: 100%;
   transition: opacity 0.5s ease-in-out;
   z-index: 0;
+  /* Performance optimization: hint to browser for GPU acceleration */
+  will-change: opacity;
+  /* Isolate compositing layer to reduce repaints */
+  transform: translateZ(0);
 }
 
 .slide.active {
@@ -302,6 +334,10 @@
     rgb(0 0 0 / 0.5) 6%,
     #000000 8%
   );
+  /* Performance: hint browser that transform/opacity may change */
+  will-change: transform, opacity;
+  /* Force GPU acceleration for smoother rendering */
+  transform: translateZ(0);
 }
 
 .backdrop-overlay {

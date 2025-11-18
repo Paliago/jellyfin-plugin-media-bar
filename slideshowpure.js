@@ -1,5 +1,6 @@
 /*
- * Jellyfin Slideshow by M0RPH3US v3.0.4
+ * Jellyfin Slideshow by M0RPH3US v3.0.5-performance
+ * Performance optimizations for high-resolution displays (1440p/4K)
  */
 
 //Core Module Configuration
@@ -21,6 +22,20 @@ const CONFIG = {
   preloadCount: 3,
   fadeTransitionDuration: 500,
   slideAnimationEnabled: true,
+  // Performance optimization: detect high resolution displays
+  get isHighResolution() {
+    return window.innerWidth >= 2560 || window.innerHeight >= 1440;
+  },
+  get isUltraHighResolution() {
+    return window.innerWidth >= 3840;
+  },
+  // Adaptive animation settings based on resolution
+  get shouldUseBlurAnimations() {
+    return !this.isHighResolution;
+  },
+  get shouldUseKenBurnsEffect() {
+    return !this.isHighResolution;
+  },
 };
 
 // State management
@@ -334,6 +349,67 @@ waitForApiClientAndInitialize();
  * Utility functions for slide creation and management
  */
 const SlideUtils = {
+  /**
+   * Gets optimized image parameters based on viewport size
+   * @returns {Object} Object with quality and maxWidth parameters
+   */
+  getImageParams() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    // Ultra high resolution (4K+): cap at 1920px, lower quality
+    if (width >= 3840 || height >= 2160) {
+      return { 
+        backdropQuality: 50, 
+        backdropMaxWidth: 1920,
+        logoQuality: 35,
+        logoMaxWidth: 800
+      };
+    }
+    // High resolution (1440p-4K): cap at 1920px
+    else if (width >= 2560 || height >= 1440) {
+      return { 
+        backdropQuality: 55, 
+        backdropMaxWidth: 1920,
+        logoQuality: 38,
+        logoMaxWidth: 800
+      };
+    }
+    // Standard 1080p: use full size but lower quality slightly
+    else if (width >= 1920) {
+      return { 
+        backdropQuality: 60, 
+        backdropMaxWidth: 1920,
+        logoQuality: 40,
+        logoMaxWidth: null
+      };
+    }
+    // Lower resolutions: original settings
+    else {
+      return { 
+        backdropQuality: 60, 
+        backdropMaxWidth: null,
+        logoQuality: 40,
+        logoMaxWidth: null
+      };
+    }
+  },
+
+  /**
+   * Builds optimized image URL with resolution-appropriate parameters
+   * @param {string} baseUrl - Base image URL
+   * @param {number} quality - JPEG quality
+   * @param {number|null} maxWidth - Maximum width (null for no limit)
+   * @returns {string} Optimized image URL
+   */
+  buildImageUrl(baseUrl, quality, maxWidth = null) {
+    let url = `${baseUrl}?quality=${quality}`;
+    if (maxWidth) {
+      url += `&maxWidth=${maxWidth}`;
+    }
+    return url;
+  },
+
   /**
    * Shuffles array elements randomly
    * @param {Array} array - Array to shuffle
@@ -782,6 +858,9 @@ const SlideCreator = {
 
     const itemId = item.Id;
     const serverAddress = STATE.jellyfinData.serverAddress;
+    
+    // Get optimized image parameters based on viewport size
+    const imgParams = SlideUtils.getImageParams();
 
     const slide = SlideUtils.createElement("a", {
       className: "slide",
@@ -791,9 +870,15 @@ const SlideCreator = {
       "data-item-id": itemId,
     });
 
+    const backdropUrl = SlideUtils.buildImageUrl(
+      `${serverAddress}/Items/${itemId}/Images/Backdrop/0`,
+      imgParams.backdropQuality,
+      imgParams.backdropMaxWidth
+    );
+
     const backdrop = SlideUtils.createElement("img", {
       className: "backdrop high-quality",
-      src: `${serverAddress}/Items/${itemId}/Images/Backdrop/0?quality=60`,
+      src: backdropUrl,
       alt: "Backdrop",
       loading: "eager",
     });
@@ -807,9 +892,15 @@ const SlideCreator = {
     });
     backdropContainer.append(backdrop, backdropOverlay);
 
+    const logoUrl = SlideUtils.buildImageUrl(
+      `${serverAddress}/Items/${itemId}/Images/Logo`,
+      imgParams.logoQuality,
+      imgParams.logoMaxWidth
+    );
+
     const logo = SlideUtils.createElement("img", {
       className: "logo high-quality",
-      src: `${serverAddress}/Items/${itemId}/Images/Logo?quality=40`,
+      src: logoUrl,
       alt: item.Name,
       loading: "eager",
     });
@@ -1174,32 +1265,41 @@ const SlideshowManager = {
 
       previousVisibleSlide = container.querySelector(".slide.active");
 
-      if (previousVisibleSlide) {
-        previousVisibleSlide.classList.remove("active");
-      }
+      // Batch DOM updates in a single requestAnimationFrame for better performance
+      requestAnimationFrame(() => {
+        if (previousVisibleSlide) {
+          previousVisibleSlide.classList.remove("active");
+        }
 
-      currentSlide.classList.add("active");
+        currentSlide.classList.add("active");
 
-      if (CONFIG.slideAnimationEnabled) {
-        currentSlide.querySelector(".backdrop").classList.add("animate");
-        currentSlide.querySelector(".logo").classList.add("animate");
-      }
+        // Only apply animations if enabled and not on high-res displays
+        if (CONFIG.slideAnimationEnabled && CONFIG.shouldUseBlurAnimations) {
+          const backdrop = currentSlide.querySelector(".backdrop");
+          const logo = currentSlide.querySelector(".logo");
+          if (backdrop) backdrop.classList.add("animate");
+          if (logo) logo.classList.add("animate");
+        }
+
+        if (index === 0 || !previousVisibleSlide) {
+          const dotsContainer = container.querySelector(".dots-container");
+          if (dotsContainer) {
+            dotsContainer.style.opacity = "1";
+          }
+        }
+      });
 
       STATE.slideshow.currentSlideIndex = index;
 
-      if (index === 0 || !previousVisibleSlide) {
-        const dotsContainer = container.querySelector(".dots-container");
-        if (dotsContainer) {
-          dotsContainer.style.opacity = "1";
-        }
-      }
-
+      // Clean up other slides after transition completes
       setTimeout(() => {
-        const allSlides = container.querySelectorAll(".slide");
-        allSlides.forEach((slide) => {
-          if (slide !== currentSlide) {
-            slide.classList.remove("active");
-          }
+        requestAnimationFrame(() => {
+          const allSlides = container.querySelectorAll(".slide");
+          allSlides.forEach((slide) => {
+            if (slide !== currentSlide) {
+              slide.classList.remove("active");
+            }
+          });
         });
       }, CONFIG.fadeTransitionDuration);
 
@@ -1218,10 +1318,12 @@ const SlideshowManager = {
         STATE.slideshow.isTransitioning = false;
 
         if (previousVisibleSlide && CONFIG.slideAnimationEnabled) {
-          const prevBackdrop = previousVisibleSlide.querySelector(".backdrop");
-          const prevLogo = previousVisibleSlide.querySelector(".logo");
-          if (prevBackdrop) prevBackdrop.classList.remove("animate");
-          if (prevLogo) prevLogo.classList.remove("animate");
+          requestAnimationFrame(() => {
+            const prevBackdrop = previousVisibleSlide.querySelector(".backdrop");
+            const prevLogo = previousVisibleSlide.querySelector(".logo");
+            if (prevBackdrop) prevBackdrop.classList.remove("animate");
+            if (prevLogo) prevLogo.classList.remove("animate");
+          });
         }
       }, CONFIG.fadeTransitionDuration);
     }
