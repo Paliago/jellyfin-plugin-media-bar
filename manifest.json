@@ -12,9 +12,9 @@
         "version": "2.5.2.0",
         "changelog": "Performance optimizations: responsive images, adaptive animations for 1440p/4K, GPU acceleration improvements",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Paliago/jellyfin-plugin-media-bar/releases/download/v2.5.2/Jellyfin.Plugin.MediaBar.dll",
-        "checksum": "0b4b01159adeb52a2dd507523b498b0454998e387d7fcbdad43570bc13d2a71c",
-        "timestamp": "2025-11-18T21:45:00Z"
+        "sourceUrl": "https://github.com/Paliago/jellyfin-plugin-media-bar/releases/download/v2.5.2/jellyfin-plugin-mediabar-v2.5.2.zip",
+        "checksum": "e14ca1580de5a0a943ef504ac8e9d9a93133f6c2e38303bcc1b27e6ea5a9970d",
+        "timestamp": "2025-11-20T16:37:00Z"
       }
     ]
   }
